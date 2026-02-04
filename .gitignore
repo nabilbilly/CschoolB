@@ -1,0 +1,34 @@
+# Env files (secrets)
+.env
+.env.*
+!.env.example
+!.env.production
+
+# Local databases (never commit)
+*.sqlite3
+*.db
+*.sqlite
+*.sqlite-journal
+
+# Postgres local folders (if you ever store data locally)
+pgdata/
+postgres-data/
+data/
+db_data/
+
+# Python
+__pycache__/
+.venv/
+venv/
+*.pyc
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+.vite/
+.cache/
+
+# Logs
+*.log
