@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Database
-    DATABASE_URL: Optional[str] = None
-    PORT: int = 8001
+    DATABASE_URL: str = "postgresql://postgres:jFPkydPlJElsIFbjLwusGXjgxTreFepA@postgres.railway.internal:5432/railway"
+  
     
     # CORS
     BACKEND_CORS_ORIGINS: list[str] = [
