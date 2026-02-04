@@ -15,10 +15,9 @@ class Settings(BaseSettings):
     
     # CORS
     BACKEND_CORS_ORIGINS: list[str] = [
-        "https://saas-production-aaeb.up.railway.app",
-        "https://confident-celebration-production.up.railway.app",
         "http://localhost:5173",
         "http://localhost:3000",
+        "https://react-frontend-production-e144.up.railway.app",
     ]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
@@ -46,7 +45,7 @@ class Settings(BaseSettings):
                 return self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
             return self.DATABASE_URL
         # Fallback for local development if DATABASE_URL is missing
-        return "postgresql://postgres:123@localhost:5432/cschool_db"
+        return "postgresql://postgres:jFPkydPlJElsIFbjLwusGXjgxTreFepA@postgres.railway.internal:5432/railway"
 
     class Config:
         env_file = ".env"
