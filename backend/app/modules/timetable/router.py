@@ -1,1 +1,3 @@
-# Placeholder for router.py in timetable module
+from fastapi import APIRouter
+
+router = APIRouter()

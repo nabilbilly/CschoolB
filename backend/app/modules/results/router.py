@@ -1,1 +1,3 @@
-# Placeholder for router.py in results module
+from fastapi import APIRouter
+
+router = APIRouter()

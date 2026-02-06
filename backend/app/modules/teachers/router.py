@@ -1,1 +1,3 @@
-# Placeholder for router.py in teachers module
+from fastapi import APIRouter
+
+router = APIRouter()

@@ -1,23 +1,47 @@
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends, Request, status
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+import traceback
+from app.core import logging_config # noqa
 from app.core.config import settings
 from app.db import base # noqa
 from app.db.session import get_db
 from app.api import api_router
+from app.core.middleware import LoggingMiddleware
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Diagnostic Middleware to log origins
-@app.middleware("http")
-async def log_origin_middleware(request: Request, call_next):
-    origin = request.headers.get("origin")
-    if origin:
-        print(f"Incoming Request Origin: {origin}")
-    response = await call_next(request)
-    return response
+# Global Exception Handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    # Log the error (it might have been logged by middleware already, but 
+    # capturing it here ensures it's logged even if middleware is bypassed or fails)
+    logger.error(f"Global exception caught for {request.method} {request.url.path}: {str(exc)}")
+    
+    if settings.ENVIRONMENT == "development":
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "detail": str(exc),
+                "traceback": traceback.format_exc(),
+                "path": request.url.path,
+                "method": request.method
+            },
+        )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Internal Server Error"},
+    )
+
+# Register centralized logging middleware
+app.add_middleware(LoggingMiddleware)
+
 # Set all CORS enabled origins
 app.add_middleware(
     CORSMiddleware,

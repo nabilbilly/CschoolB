@@ -1,33 +1,92 @@
-import os
-from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
-from pydantic import field_validator
+# from pydantic_settings import BaseSettings, SettingsConfigDict
+# from pydantic import field_validator
+# from typing import Optional, List, Union
 
-# Load .env locally (in production it will simply do nothing if .env isn't there)
-load_dotenv()
+
+# class Settings(BaseSettings):
+#     model_config = SettingsConfigDict(
+#         env_file=".env",
+#         env_file_encoding="utf-8",
+#         case_sensitive=True,
+#         extra="ignore"
+#     )
+
+#     PROJECT_NAME: str
+#     API_V1_STR: str
+    
+#     # Database
+#     DATABASE_URL: str
+
+#     # Security
+#     SECRET_KEY: str
+#     ALGORITHM: str
+#     ACCESS_TOKEN_EXPIRE_MINUTES: int
+
+#     # Environment
+#     ENVIRONMENT: str
+
+#     # Optional
+#     PORT: int
+
+#     # CORS
+#     BACKEND_CORS_ORIGINS: List[str] = []
+
+#     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+#     @classmethod
+#     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+#         if v is None or v == "":
+#             return []
+#         if isinstance(v, str):
+#             if v.startswith("["):
+#                 import json
+#                 return json.loads(v)
+#             return [i.strip() for i in v.split(",")]
+#         return v
+
+#     @property
+#     def sqlalchemy_database_uri(self) -> str:
+#         # Railway/Heroku compatibility: replace postgres:// with postgresql://
+#         if self.DATABASE_URL.startswith("postgres://"):
+#             return self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
+#         return self.DATABASE_URL
+
+
+# settings = Settings()
+
+
+
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator, Field
+from typing import List, Union, Literal
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",              # local dev convenience
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore",
+    )
+
     PROJECT_NAME: str = "cschool Backend"
     API_V1_STR: str = "/api/v1"
 
-    # Database (required)
-    DATABASE_URL: str = os.environ["DATABASE_URL"]
+    DATABASE_URL: str
 
-    # Security (required)
-    SECRET_KEY: str = os.environ["SECRET_KEY"]
-    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+    SECRET_KEY: str = Field(..., min_length=32)
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    # Optional
-    PORT: int = int(os.getenv("PORT", "8001"))
+    ENVIRONMENT: Literal["development", "staging", "production"] = "development"
 
-    # CORS (optional; set in env for production)
-    BACKEND_CORS_ORIGINS: list[str] = []
+    PORT: int = 8001
+
+    BACKEND_CORS_ORIGINS: List[str] = []
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
-    def assemble_cors_origins(cls, v):
-        if v is None or v == "":
+    def assemble_cors_origins(cls, v: Union[str, List[str]]):
+        if not v:
             return []
         if isinstance(v, str):
             if v.startswith("["):
@@ -38,7 +97,6 @@ class Settings(BaseSettings):
 
     @property
     def sqlalchemy_database_uri(self) -> str:
-        # Railway/Heroku compatibility
         if self.DATABASE_URL.startswith("postgres://"):
             return self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
         return self.DATABASE_URL

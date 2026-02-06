@@ -7,10 +7,12 @@ from .models import Admission, AdmissionStatus
 from app.modules.students.models import Student
 from app.modules.evoucher.models import EVoucher
 from datetime import datetime
+import logging
 import traceback
 import sys
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=schemas.AdmissionResponse)
 def create_admission(
@@ -20,14 +22,20 @@ def create_admission(
     """
     Step 2-3 of Wizard: Capture all data and create a PENDING admission.
     """
-    return service.AdmissionsService.create_pending_admission(
-        db,
-        voucher_session_token=obj_in.voucher_session_token,
-        student_data=obj_in.student.model_dump(),
-        guardian_data=[g.model_dump() for g in obj_in.guardians],
-        medical_data=obj_in.medical.model_dump() if obj_in.medical else None,
-        placement_data=obj_in.placement
-    )
+    try:
+        return service.AdmissionsService.create_pending_admission(
+            db,
+            voucher_session_token=obj_in.voucher_session_token,
+            student_data=obj_in.student.model_dump(),
+            guardian_data=[g.model_dump() for g in obj_in.guardians],
+            medical_data=obj_in.medical.model_dump() if obj_in.medical else None,
+            placement_data=obj_in.placement
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to create pending admission")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{admission_id}/approve", response_model=schemas.AdmissionResponse)
 def approve_admission(
@@ -38,7 +46,13 @@ def approve_admission(
     """
     Step 4 of Wizard (Admin Action): Official Approval.
     """
-    return service.AdmissionsService.approve_admission(db, admission_id, admin_id)
+    try:
+        return service.AdmissionsService.approve_admission(db, admission_id, admin_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Failed to approve admission {admission_id}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=List[schemas.AdmissionResponse])
 def list_admissions(
@@ -92,9 +106,7 @@ def list_admissions(
         
         return query.order_by(adm.created_at.desc()).all()
     except Exception as e:
-        with open("debug_error.log", "a") as f:
-            f.write(f"\n--- Error at {datetime.now()} ---\n")
-            traceback.print_exc(file=f)
+        logger.exception("Failed to list admissions")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{admission_id}/reject", response_model=schemas.AdmissionResponse)
@@ -106,14 +118,26 @@ def reject_admission(
     """
     Reject admission application.
     """
-    return service.AdmissionsService.reject_admission(db, admission_id, admin_id)
+    try:
+        return service.AdmissionsService.reject_admission(db, admission_id, admin_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Failed to reject admission {admission_id}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{admission_id}", response_model=schemas.AdmissionResponse)
 def get_admission(
     admission_id: int,
     db: Session = Depends(get_db)
 ):
-    admission = db.query(Admission).filter(Admission.id == admission_id).first()
-    if not admission:
-        raise HTTPException(status_code=404, detail="Admission not found")
-    return admission
+    try:
+        admission = db.query(Admission).filter(Admission.id == admission_id).first()
+        if not admission:
+            raise HTTPException(status_code=404, detail="Admission not found")
+        return admission
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Failed to get admission {admission_id}")
+        raise HTTPException(status_code=500, detail=str(e))

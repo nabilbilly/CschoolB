@@ -1,1 +1,3 @@
-# Placeholder for router.py in staff module
+from fastapi import APIRouter
+
+router = APIRouter()
