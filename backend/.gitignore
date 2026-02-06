@@ -41,6 +41,6 @@ diagnostic_output.txt
 Thumbs.db
 
 # Environment variables
-.env
+# .env (Allowed by user request)
 .env.local
 .env.*.local
