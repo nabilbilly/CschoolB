@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator, Field
-from typing import List, Union, Literal
+from typing import List, Union, Literal, Optional
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -36,6 +36,22 @@ class Settings(BaseSettings):
                 return json.loads(v)
             return [i.strip() for i in v.split(",")]
         return v
+
+    @property
+    def DEBUG(self) -> bool:
+        return self.ENVIRONMENT == "development"
+
+    @property
+    def docs_url(self) -> Optional[str]:
+        return "/docs" if self.ENVIRONMENT != "production" else None
+
+    @property
+    def redoc_url(self) -> Optional[str]:
+        return "/redoc" if self.ENVIRONMENT != "production" else None
+
+    @property
+    def openapi_url(self) -> Optional[str]:
+        return f"{self.API_V1_STR}/openapi.json" if self.ENVIRONMENT != "production" else None
 
     @property
     def sqlalchemy_database_uri(self) -> str:

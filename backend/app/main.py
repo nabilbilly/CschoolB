@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=settings.openapi_url,
+    docs_url=settings.docs_url,
+    redoc_url=settings.redoc_url,
 )
 
 # Global Exception Handler
@@ -56,7 +58,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to cschool API", "docs": "/docs"}
+    return {"message": "Welcome to cschool API"}
 
 @app.get("/health")
 def health_check():

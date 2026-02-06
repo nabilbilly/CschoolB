@@ -35,6 +35,7 @@ ENV/
 *.log
 debug_output.txt
 diagnostic_output.txt
+server_debug.log
 
 # OS
 .DS_Store
@@ -44,3 +45,7 @@ Thumbs.db
 # .env (Allowed by user request)
 .env.local
 .env.*.local
+
+# Temporary / Debug Scripts
+verify_apis.py
+debug_models.py
