@@ -16,7 +16,7 @@ class Student(Base):
     first_name = Column(String, nullable=False)
     middle_name = Column(String, nullable=True)
     last_name = Column(String, nullable=False)
-    gender = Column(SqlEnum(Gender), nullable=False)
+    gender = Column(SqlEnum(Gender, values_callable=lambda x: [e.value for e in x]), nullable=False)
     date_of_birth = Column(Date, nullable=False)
     nationality = Column(String, nullable=False)
     address = Column(Text, nullable=True)

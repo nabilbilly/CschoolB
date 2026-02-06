@@ -19,7 +19,7 @@ class Admission(Base):
     term_id = Column(Integer, ForeignKey("term.id"), nullable=False)
     voucher_id = Column(Integer, ForeignKey("evoucher.id"), nullable=False)
     
-    status = Column(SqlEnum(AdmissionStatus), default=AdmissionStatus.PENDING)
+    status = Column(SqlEnum(AdmissionStatus, values_callable=lambda x: [e.value for e in x]), default=AdmissionStatus.PENDING)
     approved_by_admin_id = Column(Integer, nullable=True) # FK to user
     approved_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

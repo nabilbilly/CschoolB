@@ -16,7 +16,7 @@ class TermStatus(str, enum.Enum):
 class AcademicYear(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True) # e.g., 2026/2027
-    status = Column(SqlEnum(YearStatus), default=YearStatus.DRAFT)
+    status = Column(SqlEnum(YearStatus, values_callable=lambda x: [e.value for e in x]), default=YearStatus.DRAFT)
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
 
@@ -26,7 +26,7 @@ class Term(Base):
     id = Column(Integer, primary_key=True, index=True)
     academic_year_id = Column(Integer, ForeignKey("academicyear.id", ondelete="RESTRICT"), nullable=False)
     name = Column(String, nullable=False) # e.g., Term 1
-    status = Column(SqlEnum(TermStatus), default=TermStatus.DRAFT)
+    status = Column(SqlEnum(TermStatus, values_callable=lambda x: [e.value for e in x]), default=TermStatus.DRAFT)
     sequence = Column(Integer, default=1)
     
     start_date = Column(Date, nullable=True)
