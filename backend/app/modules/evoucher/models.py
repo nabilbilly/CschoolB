@@ -24,7 +24,7 @@ class EVoucher(Base):
     voucher_number = Column(String, unique=True, index=True, nullable=False)
     pin_hash = Column(String, nullable=False)
     academic_year_id = Column(Integer, ForeignKey("academicyear.id"), nullable=False)
-    status = Column(SqlEnum(VoucherStatus), default=VoucherStatus.UNUSED)
+    status = Column(SqlEnum(VoucherStatus, values_callable=lambda x: [e.value for e in x]), default=VoucherStatus.UNUSED)
     
     expires_at = Column(DateTime, nullable=False)
     reserved_at = Column(DateTime, nullable=True)
@@ -45,5 +45,5 @@ class VoucherAttemptLog(Base):
     voucher_number_entered = Column(String, index=True)
     ip_address = Column(String)
     user_agent = Column(String)
-    result = Column(SqlEnum(VoucherAttemptResult))
+    result = Column(SqlEnum(VoucherAttemptResult, values_callable=lambda x: [e.value for e in x]))
     created_at = Column(DateTime, default=datetime.utcnow)
