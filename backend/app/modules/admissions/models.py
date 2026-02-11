@@ -9,6 +9,17 @@ class AdmissionStatus(str, enum.Enum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
+    PENDING_LOWER = "pending"
+    APPROVED_LOWER = "approved"
+    REJECTED_LOWER = "rejected"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            for member in cls:
+                if member.value.upper() == value.upper():
+                    return member
+        return None
 
 class Admission(Base):
     id = Column(Integer, primary_key=True, index=True)

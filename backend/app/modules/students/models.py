@@ -7,8 +7,16 @@ from app.db.base_class import Base
 from ..admissions.models import AdmissionStatus
 
 class Gender(str, enum.Enum):
-    MALE = "Male"
-    FEMALE = "Female"
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            for member in cls:
+                if member.value.upper() == value.upper():
+                    return member
+        return None
 
 class Student(Base):
     id = Column(Integer, primary_key=True, index=True)

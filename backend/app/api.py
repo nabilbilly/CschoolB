@@ -9,6 +9,7 @@ from app.modules.results.router import router as results_router
 from app.modules.staff.router import router as staff_router
 from app.modules.teachers.router import router as teachers_router
 from app.modules.timetable.router import router as timetable_router
+from app.modules.media.router import router as media_router
 
 api_router = APIRouter()
 
@@ -22,3 +23,4 @@ api_router.include_router(results_router, prefix="/results", tags=["results"])
 api_router.include_router(staff_router, prefix="/staff", tags=["staff"])
 api_router.include_router(teachers_router, prefix="/teachers", tags=["teachers"])
 api_router.include_router(timetable_router, prefix="/timetable", tags=["timetable"])
+api_router.include_router(media_router, prefix="/media", tags=["media"])

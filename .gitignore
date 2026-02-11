@@ -1,8 +1,28 @@
 # Env files (secrets)
-# .env
-# .env.*
+.env
+.env.*
 !.env.example
 !.env.production
+
+# Temporary test/debug scripts
+check_*.py
+verify_*.py
+repro_*.py
+fix_*.py
+inspect_*.py
+debug_*.py
+test_*.py
+*.log
+*.txt
+!requirements.txt
+!readme.txt
+!alembic.ini
+!/*.txt # keep any main txt files in root if needed? No, usually they are logs or results
+# specific ignores for the ones we missed
+enum_labels.txt
+enum_results.txt
+*_output.txt
+*_results.txt
 
 # Local databases (never commit)
 *.sqlite3
@@ -32,3 +52,9 @@ build/
 
 # Logs
 *.log
+*output.txt
+*results.txt
+enum_labels.txt
+test_*.py
+*. drawio.bkp
+!test_*.py # Keep tests if they are part of the core suite, but usually they are not for this repo structure

@@ -29,6 +29,7 @@ class EVoucherVerify(BaseModel):
 
 class EVoucherSessionResponse(BaseModel):
     valid: bool
+    voucher_number: Optional[str] = None
     voucher_session_token: Optional[str] = None
     reason: Optional[VoucherAttemptResult] = None
     expires_at: Optional[datetime] = None

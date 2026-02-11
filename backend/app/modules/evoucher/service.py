@@ -73,13 +73,9 @@ class EVoucherService:
 
         # Handle Reservation
         now = datetime.utcnow()
-        if voucher.status == VoucherStatus.RESERVED:
-            # Check if reservation still valid
-            if voucher.reserved_at + timedelta(minutes=RESERVATION_TTL_MINUTES) > now:
-                # Still reserved by someone else
-                log_attempt(VoucherAttemptResult.RESERVED)
-                return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.RESERVED)
-            # Reservation expired, we can take it
+        # Even if currently RESERVED, if the correct PIN is provided (checked above),
+        # we allow "taking over" the session. This prevents users from being locked out
+        # if they refresh the page or clear their session.
         
         # All checks passed, Reserve it
         session_token = str(uuid.uuid4())
@@ -91,6 +87,7 @@ class EVoucherService:
         log_attempt(VoucherAttemptResult.VALID)
         return EVoucherSessionResponse(
             valid=True, 
+            voucher_number=voucher.voucher_number,
             voucher_session_token=session_token,
             expires_at=now + timedelta(minutes=RESERVATION_TTL_MINUTES),
             academic_year_id=voucher.academic_year_id
@@ -125,6 +122,7 @@ class EVoucherService:
         
         return EVoucherSessionResponse(
             valid=True,
+            voucher_number=voucher.voucher_number,
             voucher_session_token=session_token,
             expires_at=expires_at,
             academic_year_id=voucher.academic_year_id

@@ -21,6 +21,12 @@ def create_academic_year(
         if existing:
             raise HTTPException(status_code=400, detail="Academic year name already exists")
         
+        if obj_in.status == models.YearStatus.ACTIVE:
+            # Enforce single active year: Archive others
+            db.query(models.AcademicYear).filter(
+                models.AcademicYear.status == models.YearStatus.ACTIVE
+            ).update({models.AcademicYear.status: models.YearStatus.ARCHIVED})
+        
         db_obj = models.AcademicYear(**obj_in.model_dump())
         db.add(db_obj)
         db.commit()
@@ -73,13 +79,11 @@ def update_academic_year(
                 if start >= end:
                     raise HTTPException(status_code=400, detail="Start date must be before end date")
                 
-                # Check for other active years
-                active_year = db.query(models.AcademicYear).filter(
+                # Enforce single active year: Archive others
+                db.query(models.AcademicYear).filter(
                     models.AcademicYear.status == models.YearStatus.ACTIVE,
                     models.AcademicYear.id != year_id
-                ).first()
-                if active_year:
-                    raise HTTPException(status_code=400, detail="Another academic year is already active")
+                ).update({models.AcademicYear.status: models.YearStatus.ARCHIVED})
             
             year.status = obj_in.status
 

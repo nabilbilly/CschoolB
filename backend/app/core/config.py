@@ -1,10 +1,15 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator, Field
 from typing import List, Union, Literal, Optional
+from pathlib import Path
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",              # local dev convenience
+        env_file=[
+            ".env",
+            str(Path(__file__).resolve().parent.parent.parent.parent / ".env"),
+            "backend/.env"
+        ],
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",
@@ -20,6 +25,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
+
+    MEDIA_URL: str = "/media"
+    UPLOAD_DIR: str = "uploads"
 
     PORT: int = 8001
 

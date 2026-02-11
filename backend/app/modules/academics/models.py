@@ -4,14 +4,30 @@ import enum
 from app.db.base_class import Base
 
 class YearStatus(str, enum.Enum):
-    ACTIVE = "Active"
-    DRAFT = "Draft"
-    ARCHIVED = "Archived"
+    ACTIVE = "ACTIVE"
+    DRAFT = "DRAFT"
+    ARCHIVED = "ARCHIVED"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            for member in cls:
+                if member.value.upper() == value.upper():
+                    return member
+        return None
 
 class TermStatus(str, enum.Enum):
-    DRAFT = "Draft"
-    ACTIVE = "Active"
-    CLOSED = "Closed"
+    DRAFT = "DRAFT"
+    ACTIVE = "ACTIVE"
+    CLOSED = "CLOSED"
+
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            for member in cls:
+                if member.value.upper() == value.upper():
+                    return member
+        return None
 
 class AcademicYear(Base):
     id = Column(Integer, primary_key=True, index=True)

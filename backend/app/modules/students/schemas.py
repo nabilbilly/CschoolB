@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from datetime import date, datetime
 from typing import Optional, List
 from .models import Gender
@@ -81,6 +81,17 @@ class StudentBase(BaseModel):
     middle_name: Optional[str] = None
     last_name: str
     gender: Gender
+
+    @field_validator('gender', mode='before')
+    @classmethod
+    def clean_gender(cls, v):
+        if isinstance(v, str):
+            v = v.strip()
+            # Try to match enum member case-insensitively
+            for member in Gender:
+                if member.value.upper() == v.upper():
+                    return member
+        return v
     date_of_birth: date
     nationality: str
     address: Optional[str] = None
@@ -95,6 +106,17 @@ class StudentUpdate(BaseModel):
     middle_name: Optional[str] = None
     last_name: Optional[str] = None
     gender: Optional[Gender] = None
+
+    @field_validator('gender', mode='before')
+    @classmethod
+    def clean_gender(cls, v):
+        if isinstance(v, str):
+            v = v.strip()
+            # Try to match enum member case-insensitively
+            for member in Gender:
+                if member.value.upper() == v.upper():
+                    return member
+        return v
     date_of_birth: Optional[date] = None
     nationality: Optional[str] = None
     address: Optional[str] = None

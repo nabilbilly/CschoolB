@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 import logging
 import traceback
 from app.core import logging_config # noqa
@@ -55,6 +57,12 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Mount static files for media
+uploads_path = os.path.join(os.getcwd(), settings.UPLOAD_DIR)
+if not os.path.exists(uploads_path):
+    os.makedirs(uploads_path)
+app.mount(settings.MEDIA_URL, StaticFiles(directory=uploads_path), name="media")
 
 @app.get("/")
 def root():

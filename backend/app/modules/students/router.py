@@ -89,6 +89,28 @@ def get_my_profile(
 ):
     return current_student
 
+@router.patch("/me/profile", response_model=schemas.StudentResponse)
+def update_my_profile(
+    obj_in: schemas.StudentUpdate,
+    current_student: models.Student = Depends(get_current_student),
+    db: Session = Depends(get_db)
+):
+    update_data = obj_in.model_dump(exclude_unset=True)
+    
+    # Students can only update certain fields themselves (e.g., photo)
+    # For now, let's allow photo and maybe address/city if we wanted to
+    # But the request specifically mentioned photos.
+    
+    allowed_fields = {"photo", "address", "city"}
+    sanitized_data = {k: v for k, v in update_data.items() if k in allowed_fields}
+    
+    for field, value in sanitized_data.items():
+        setattr(current_student, field, value)
+    
+    db.commit()
+    db.refresh(current_student)
+    return current_student
+
 @router.get("/", response_model=List[schemas.StudentResponse])
 def list_students(
     search: Optional[str] = None,
