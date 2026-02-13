@@ -22,59 +22,148 @@ def upgrade():
     # To be safest, we'll try to execute them. 
     # Note: 'IF NOT EXISTS' is available in PG 9.1+.
     
-    # 1. Academics
-    op.execute("ALTER TYPE yearstatus ADD VALUE IF NOT EXISTS 'Active'")
-    op.execute("ALTER TYPE yearstatus ADD VALUE IF NOT EXISTS 'Draft'")
-    op.execute("ALTER TYPE yearstatus ADD VALUE IF NOT EXISTS 'Archived'")
-    op.execute("UPDATE academicyear SET status = 'Active' WHERE status = 'ACTIVE'")
-    op.execute("UPDATE academicyear SET status = 'Draft' WHERE status = 'DRAFT'")
-    op.execute("UPDATE academicyear SET status = 'Archived' WHERE status = 'ARCHIVED'")
+    # Use autocommit block for ALTER TYPE
+    with op.get_context().autocommit_block():
+        # 1. Academics
+        op.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Active' AND enumtypid = 'yearstatus'::regtype) THEN
+                    ALTER TYPE yearstatus ADD VALUE 'Active';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Draft' AND enumtypid = 'yearstatus'::regtype) THEN
+                    ALTER TYPE yearstatus ADD VALUE 'Draft';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Archived' AND enumtypid = 'yearstatus'::regtype) THEN
+                    ALTER TYPE yearstatus ADD VALUE 'Archived';
+                END IF;
+            END$$;
+        """)
 
-    op.execute("ALTER TYPE termstatus ADD VALUE IF NOT EXISTS 'Active'")
-    op.execute("ALTER TYPE termstatus ADD VALUE IF NOT EXISTS 'Draft'")
-    op.execute("ALTER TYPE termstatus ADD VALUE IF NOT EXISTS 'Closed'")
-    op.execute("UPDATE term SET status = 'Active' WHERE status = 'ACTIVE'")
-    op.execute("UPDATE term SET status = 'Draft' WHERE status = 'DRAFT'")
-    op.execute("UPDATE term SET status = 'Closed' WHERE status = 'CLOSED'")
+        op.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Active' AND enumtypid = 'termstatus'::regtype) THEN
+                    ALTER TYPE termstatus ADD VALUE 'Active';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Draft' AND enumtypid = 'termstatus'::regtype) THEN
+                    ALTER TYPE termstatus ADD VALUE 'Draft';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Closed' AND enumtypid = 'termstatus'::regtype) THEN
+                    ALTER TYPE termstatus ADD VALUE 'Closed';
+                END IF;
+            END$$;
+        """)
+
+        # 2. Admissions
+        op.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Pending' AND enumtypid = 'admissionstatus'::regtype) THEN
+                    ALTER TYPE admissionstatus ADD VALUE 'Pending';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Approved' AND enumtypid = 'admissionstatus'::regtype) THEN
+                    ALTER TYPE admissionstatus ADD VALUE 'Approved';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Rejected' AND enumtypid = 'admissionstatus'::regtype) THEN
+                    ALTER TYPE admissionstatus ADD VALUE 'Rejected';
+                END IF;
+            END$$;
+        """)
+
+        # 3. Students
+        op.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Male' AND enumtypid = 'gender'::regtype) THEN
+                    ALTER TYPE gender ADD VALUE 'Male';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Female' AND enumtypid = 'gender'::regtype) THEN
+                    ALTER TYPE gender ADD VALUE 'Female';
+                END IF;
+            END$$;
+        """)
+
+        # 4. EVoucher
+        op.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Unused' AND enumtypid = 'voucherstatus'::regtype) THEN
+                    ALTER TYPE voucherstatus ADD VALUE 'Unused';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Reserved' AND enumtypid = 'voucherstatus'::regtype) THEN
+                    ALTER TYPE voucherstatus ADD VALUE 'Reserved';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Used' AND enumtypid = 'voucherstatus'::regtype) THEN
+                    ALTER TYPE voucherstatus ADD VALUE 'Used';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Expired' AND enumtypid = 'voucherstatus'::regtype) THEN
+                    ALTER TYPE voucherstatus ADD VALUE 'Expired';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Revoked' AND enumtypid = 'voucherstatus'::regtype) THEN
+                    ALTER TYPE voucherstatus ADD VALUE 'Revoked';
+                END IF;
+            END$$;
+        """)
+
+        op.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Valid' AND enumtypid = 'voucherattemptresult'::regtype) THEN
+                    ALTER TYPE voucherattemptresult ADD VALUE 'Valid';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Invalid Pin' AND enumtypid = 'voucherattemptresult'::regtype) THEN
+                    ALTER TYPE voucherattemptresult ADD VALUE 'Invalid Pin';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Not Found' AND enumtypid = 'voucherattemptresult'::regtype) THEN
+                    ALTER TYPE voucherattemptresult ADD VALUE 'Not Found';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Expired' AND enumtypid = 'voucherattemptresult'::regtype) THEN
+                    ALTER TYPE voucherattemptresult ADD VALUE 'Expired';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Used' AND enumtypid = 'voucherattemptresult'::regtype) THEN
+                    ALTER TYPE voucherattemptresult ADD VALUE 'Used';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'Reserved' AND enumtypid = 'voucherattemptresult'::regtype) THEN
+                    ALTER TYPE voucherattemptresult ADD VALUE 'Reserved';
+                END IF;
+            END$$;
+        """)
+
+    # Data updates can be in a transaction (default) or not. 
+    # Since we left the autocommit block, we are back to default mode (transactional).
+    
+    # 1. Academics
+    op.execute("UPDATE academicyear SET status = 'Active' WHERE status::text = 'ACTIVE'")
+    op.execute("UPDATE academicyear SET status = 'Draft' WHERE status::text = 'DRAFT'")
+    op.execute("UPDATE academicyear SET status = 'Archived' WHERE status::text = 'ARCHIVED'")
+
+    op.execute("UPDATE term SET status = 'Active' WHERE status::text = 'ACTIVE'")
+    op.execute("UPDATE term SET status = 'Draft' WHERE status::text = 'DRAFT'")
+    op.execute("UPDATE term SET status = 'Closed' WHERE status::text = 'CLOSED'")
 
     # 2. Admissions
-    op.execute("ALTER TYPE admissionstatus ADD VALUE IF NOT EXISTS 'Pending'")
-    op.execute("ALTER TYPE admissionstatus ADD VALUE IF NOT EXISTS 'Approved'")
-    op.execute("ALTER TYPE admissionstatus ADD VALUE IF NOT EXISTS 'Rejected'")
-    op.execute("UPDATE admission SET status = 'Pending' WHERE status = 'PENDING'")
-    op.execute("UPDATE admission SET status = 'Approved' WHERE status = 'APPROVED'")
-    op.execute("UPDATE admission SET status = 'Rejected' WHERE status = 'REJECTED'")
+    op.execute("UPDATE admission SET status = 'Pending' WHERE status::text = 'PENDING'")
+    op.execute("UPDATE admission SET status = 'Approved' WHERE status::text = 'APPROVED'")
+    op.execute("UPDATE admission SET status = 'Rejected' WHERE status::text = 'REJECTED'")
 
     # 3. Students
-    op.execute("ALTER TYPE gender ADD VALUE IF NOT EXISTS 'Male'")
-    op.execute("ALTER TYPE gender ADD VALUE IF NOT EXISTS 'Female'")
-    op.execute("UPDATE student SET gender = 'Male' WHERE gender = 'MALE'")
-    op.execute("UPDATE student SET gender = 'Female' WHERE gender = 'FEMALE'")
+    op.execute("UPDATE student SET gender = 'Male' WHERE gender::text = 'MALE'")
+    op.execute("UPDATE student SET gender = 'Female' WHERE gender::text = 'FEMALE'")
 
     # 4. EVoucher
-    op.execute("ALTER TYPE voucherstatus ADD VALUE IF NOT EXISTS 'Unused'")
-    op.execute("ALTER TYPE voucherstatus ADD VALUE IF NOT EXISTS 'Reserved'")
-    op.execute("ALTER TYPE voucherstatus ADD VALUE IF NOT EXISTS 'Used'")
-    op.execute("ALTER TYPE voucherstatus ADD VALUE IF NOT EXISTS 'Expired'")
-    op.execute("ALTER TYPE voucherstatus ADD VALUE IF NOT EXISTS 'Revoked'")
-    op.execute("UPDATE evoucher SET status = 'Unused' WHERE status = 'UNUSED'")
-    op.execute("UPDATE evoucher SET status = 'Reserved' WHERE status = 'RESERVED'")
-    op.execute("UPDATE evoucher SET status = 'Used' WHERE status = 'USED'")
-    op.execute("UPDATE evoucher SET status = 'Expired' WHERE status = 'EXPIRED'")
-    op.execute("UPDATE evoucher SET status = 'Revoked' WHERE status = 'REVOKED'")
+    op.execute("UPDATE evoucher SET status = 'Unused' WHERE status::text = 'UNUSED'")
+    op.execute("UPDATE evoucher SET status = 'Reserved' WHERE status::text = 'RESERVED'")
+    op.execute("UPDATE evoucher SET status = 'Used' WHERE status::text = 'USED'")
+    op.execute("UPDATE evoucher SET status = 'Expired' WHERE status::text = 'EXPIRED'")
+    op.execute("UPDATE evoucher SET status = 'Revoked' WHERE status::text = 'REVOKED'")
 
-    op.execute("ALTER TYPE voucherattemptresult ADD VALUE IF NOT EXISTS 'Valid'")
-    op.execute("ALTER TYPE voucherattemptresult ADD VALUE IF NOT EXISTS 'Invalid Pin'")
-    op.execute("ALTER TYPE voucherattemptresult ADD VALUE IF NOT EXISTS 'Not Found'")
-    op.execute("ALTER TYPE voucherattemptresult ADD VALUE IF NOT EXISTS 'Expired'")
-    op.execute("ALTER TYPE voucherattemptresult ADD VALUE IF NOT EXISTS 'Used'")
-    op.execute("ALTER TYPE voucherattemptresult ADD VALUE IF NOT EXISTS 'Reserved'")
-    op.execute("UPDATE voucherattemptlog SET result = 'Valid' WHERE result = 'VALID'")
-    op.execute("UPDATE voucherattemptlog SET result = 'Invalid Pin' WHERE result = 'INVALID_PIN'")
-    op.execute("UPDATE voucherattemptlog SET result = 'Not Found' WHERE result = 'NOT_FOUND'")
-    op.execute("UPDATE voucherattemptlog SET result = 'Expired' WHERE result = 'EXPIRED'")
-    op.execute("UPDATE voucherattemptlog SET result = 'Used' WHERE result = 'USED'")
-    op.execute("UPDATE voucherattemptlog SET result = 'Reserved' WHERE result = 'RESERVED'")
+    op.execute("UPDATE voucherattemptlog SET result = 'Valid' WHERE result::text = 'VALID'")
+    op.execute("UPDATE voucherattemptlog SET result = 'Invalid Pin' WHERE result::text = 'INVALID_PIN'")
+    op.execute("UPDATE voucherattemptlog SET result = 'Not Found' WHERE result::text = 'NOT_FOUND'")
+    op.execute("UPDATE voucherattemptlog SET result = 'Expired' WHERE result::text = 'EXPIRED'")
+    op.execute("UPDATE voucherattemptlog SET result = 'Used' WHERE result::text = 'USED'")
+    op.execute("UPDATE voucherattemptlog SET result = 'Reserved' WHERE result::text = 'RESERVED'")
 
 
 def downgrade():
