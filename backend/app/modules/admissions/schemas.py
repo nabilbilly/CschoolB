@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 from typing import Optional, List
 from .models import AdmissionStatus
@@ -12,6 +12,13 @@ class AdmissionBase(BaseModel):
     term_id: int
     voucher_id: int
     status: AdmissionStatus = AdmissionStatus.PENDING
+
+    @field_validator('status', mode='before')
+    @classmethod
+    def validate_status(cls, v):
+        if isinstance(v, str):
+            return v.upper()
+        return v
 
 class AdmissionCreate(AdmissionBase):
     pass
@@ -27,6 +34,13 @@ class AdmissionUpdate(BaseModel):
     class_id: Optional[int] = None
     stream_id: Optional[int] = None
     status: Optional[AdmissionStatus] = None
+
+    @field_validator('status', mode='before')
+    @classmethod
+    def validate_status(cls, v):
+        if v is not None and isinstance(v, str):
+            return v.upper()
+        return v
     approved_by_admin_id: Optional[int] = None
     approved_at: Optional[datetime] = None
 

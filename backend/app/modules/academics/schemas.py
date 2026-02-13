@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import date
 from typing import Optional, List
 from .models import YearStatus, TermStatus
@@ -9,6 +9,18 @@ class AcademicYearBase(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
 
+    @field_validator('status', mode='before')
+    @classmethod
+    def validate_status(cls, v):
+        if isinstance(v, str):
+            v = v.upper()
+            valid_statuses = [s.value for s in YearStatus]
+            if v not in valid_statuses:
+                # Let Pydantic's default Enum validation handle the error if not in list
+                # or return as is and let Enum validator catch it
+                pass
+        return v
+
 class AcademicYearCreate(AcademicYearBase):
     pass
 
@@ -18,6 +30,13 @@ class AcademicYearUpdate(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
 
+    @field_validator('status', mode='before')
+    @classmethod
+    def validate_status(cls, v):
+        if v is not None and isinstance(v, str):
+            return v.upper()
+        return v
+
 class TermBase(BaseModel):
     name: str
     status: TermStatus = TermStatus.DRAFT
@@ -26,6 +45,13 @@ class TermBase(BaseModel):
     end_date: Optional[date] = None
     result_open_date: Optional[date] = None
     result_close_date: Optional[date] = None
+
+    @field_validator('status', mode='before')
+    @classmethod
+    def validate_status(cls, v):
+        if isinstance(v, str):
+            return v.upper()
+        return v
 
 class TermCreate(TermBase):
     pass
@@ -38,6 +64,13 @@ class TermUpdate(BaseModel):
     end_date: Optional[date] = None
     result_open_date: Optional[date] = None
     result_close_date: Optional[date] = None
+
+    @field_validator('status', mode='before')
+    @classmethod
+    def validate_status(cls, v):
+        if v is not None and isinstance(v, str):
+            return v.upper()
+        return v
 
 class TermResponse(TermBase):
     id: int
