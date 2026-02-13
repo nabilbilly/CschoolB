@@ -4,9 +4,9 @@ import enum
 from app.db.base_class import Base
 
 class YearStatus(str, enum.Enum):
-    ACTIVE = "ACTIVE"
-    DRAFT = "DRAFT"
-    ARCHIVED = "ARCHIVED"
+    ACTIVE = "Active"
+    DRAFT = "Draft"
+    ARCHIVED = "Archived"
 
     @classmethod
     def _missing_(cls, value):
@@ -17,9 +17,9 @@ class YearStatus(str, enum.Enum):
         return None
 
 class TermStatus(str, enum.Enum):
-    DRAFT = "DRAFT"
-    ACTIVE = "ACTIVE"
-    CLOSED = "CLOSED"
+    DRAFT = "Draft"
+    ACTIVE = "Active"
+    CLOSED = "Closed"
 
     @classmethod
     def _missing_(cls, value):

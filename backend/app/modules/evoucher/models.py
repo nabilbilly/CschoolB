@@ -5,37 +5,19 @@ from datetime import datetime
 from app.db.base_class import Base
 
 class VoucherStatus(str, enum.Enum):
-    UNUSED = "UNUSED"
-    RESERVED = "RESERVED"
-    USED = "USED"
-    EXPIRED = "EXPIRED"
-    REVOKED = "REVOKED"
-
-    @classmethod
-    def _missing_(cls, value):
-        if isinstance(value, str):
-            for member in cls:
-                if member.value.upper() == value.upper():
-                    return member
-        return None
+    Unused = "Unused"
+    Reserved = "Reserved"
+    Used = "Used"
+    Expired = "Expired"
+    Revoked = "Revoked"
 
 class VoucherAttemptResult(str, enum.Enum):
-    VALID = "VALID"
-    INVALID_PIN = "INVALID_PIN"
-    NOT_FOUND = "NOT_FOUND"
-    EXPIRED = "EXPIRED"
-    USED = "USED"
-    RESERVED = "RESERVED"
-
-    @classmethod
-    def _missing_(cls, value):
-        if isinstance(value, str):
-            # Try exact match after cleaning
-            val_clean = value.replace("_", "").upper()
-            for member in cls:
-                if member.value.replace("_", "").upper() == val_clean:
-                    return member
-        return None
+    Valid = "Valid"
+    InvalidPin = "Invalid Pin"
+    NotFound = "Not Found"
+    Expired = "Expired"
+    Used = "Used"
+    Reserved = "Reserved"
 
 class EVoucher(Base):
     id = Column(Integer, primary_key=True, index=True)

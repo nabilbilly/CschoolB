@@ -6,12 +6,9 @@ from datetime import datetime
 from app.db.base_class import Base
 
 class AdmissionStatus(str, enum.Enum):
-    PENDING = "PENDING"
-    APPROVED = "APPROVED"
-    REJECTED = "REJECTED"
-    PENDING_LOWER = "pending"
-    APPROVED_LOWER = "approved"
-    REJECTED_LOWER = "rejected"
+    PENDING = "Pending"
+    APPROVED = "Approved"
+    REJECTED = "Rejected"
 
     @classmethod
     def _missing_(cls, value):

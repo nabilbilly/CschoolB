@@ -141,9 +141,9 @@ def list_students(
         query = query.join(models.Student.admissions)
         
         if status:
-            if status == "ACTIVE":
+            if status.title() == "Active":
                 query = query.filter(Admission.status == AdmissionStatus.APPROVED)
-            elif status == "PENDING APPROVAL":
+            else: # Assuming any other status implies PENDING
                 query = query.filter(Admission.status == AdmissionStatus.PENDING)
         
         if academic_year_id:

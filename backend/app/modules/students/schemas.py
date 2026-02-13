@@ -86,11 +86,7 @@ class StudentBase(BaseModel):
     @classmethod
     def clean_gender(cls, v):
         if isinstance(v, str):
-            v = v.strip()
-            # Try to match enum member case-insensitively
-            for member in Gender:
-                if member.value.upper() == v.upper():
-                    return member
+            return v.strip().title()
         return v
     date_of_birth: date
     nationality: str
@@ -111,11 +107,7 @@ class StudentUpdate(BaseModel):
     @classmethod
     def clean_gender(cls, v):
         if isinstance(v, str):
-            v = v.strip()
-            # Try to match enum member case-insensitively
-            for member in Gender:
-                if member.value.upper() == v.upper():
-                    return member
+            return v.strip().title()
         return v
     date_of_birth: Optional[date] = None
     nationality: Optional[str] = None

@@ -17,7 +17,7 @@ class AdmissionBase(BaseModel):
     @classmethod
     def validate_status(cls, v):
         if isinstance(v, str):
-            return v.upper()
+            return v.strip().title()
         return v
 
 class AdmissionCreate(AdmissionBase):
@@ -38,8 +38,8 @@ class AdmissionUpdate(BaseModel):
     @field_validator('status', mode='before')
     @classmethod
     def validate_status(cls, v):
-        if v is not None and isinstance(v, str):
-            return v.upper()
+        if isinstance(v, str):
+            return v.strip().title()
         return v
     approved_by_admin_id: Optional[int] = None
     approved_at: Optional[datetime] = None

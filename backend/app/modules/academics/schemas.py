@@ -13,7 +13,7 @@ class AcademicYearBase(BaseModel):
     @classmethod
     def validate_status(cls, v):
         if isinstance(v, str):
-            return v.strip().upper()
+            return v.strip().title()
         return v
 
 class AcademicYearCreate(AcademicYearBase):
@@ -29,7 +29,7 @@ class AcademicYearUpdate(BaseModel):
     @classmethod
     def validate_status(cls, v):
         if isinstance(v, str):
-            return v.strip().upper()
+            return v.strip().title()
         return v
 
 class TermBase(BaseModel):
@@ -45,7 +45,7 @@ class TermBase(BaseModel):
     @classmethod
     def validate_status(cls, v):
         if isinstance(v, str):
-            return v.strip().upper()
+            return v.strip().title()
         return v
 
 class TermCreate(TermBase):
@@ -64,7 +64,7 @@ class TermUpdate(BaseModel):
     @classmethod
     def validate_status(cls, v):
         if isinstance(v, str):
-            return v.strip().upper()
+            return v.strip().title()
         return v
 
 class TermResponse(TermBase):

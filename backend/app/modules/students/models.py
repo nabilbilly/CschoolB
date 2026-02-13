@@ -7,8 +7,8 @@ from app.db.base_class import Base
 from ..admissions.models import AdmissionStatus
 
 class Gender(str, enum.Enum):
-    MALE = "MALE"
-    FEMALE = "FEMALE"
+    MALE = "Male"
+    FEMALE = "Female"
 
     @classmethod
     def _missing_(cls, value):
@@ -44,28 +44,28 @@ class Student(Base):
         # Get latest approved admission
         if not self.admissions: return "N/A"
         latest_adm = next((a for a in sorted(self.admissions, key=lambda x: x.created_at, reverse=True) 
-                          if a.status == "APPROVED"), None)
+                          if a.status == "Approved"), None)
         return latest_adm.class_room.name if latest_adm else "N/A"
 
     @property
     def class_id(self) -> Optional[int]:
         if not self.admissions: return None
         latest_adm = next((a for a in sorted(self.admissions, key=lambda x: x.created_at, reverse=True) 
-                          if a.status == "APPROVED"), None)
+                          if a.status == "Approved"), None)
         return latest_adm.class_id if latest_adm else None
 
     @property
     def stream_id(self) -> Optional[int]:
         if not self.admissions: return None
         latest_adm = next((a for a in sorted(self.admissions, key=lambda x: x.created_at, reverse=True) 
-                          if a.status == "APPROVED"), None)
+                          if a.status == "Approved"), None)
         return latest_adm.stream_id if latest_adm else None
 
     @property
     def current_stream(self) -> str:
         if not self.admissions: return "N/A"
         latest_adm = next((a for a in sorted(self.admissions, key=lambda x: x.created_at, reverse=True) 
-                          if a.status == "APPROVED"), None)
+                          if a.status == "Approved"), None)
         return latest_adm.stream.name if latest_adm and latest_adm.stream else "N/A"
 
     @property
@@ -90,7 +90,7 @@ class Student(Base):
     def admission_year(self) -> str:
         if not self.admissions: return "N/A"
         latest_adm = next((a for a in sorted(self.admissions, key=lambda x: x.created_at, reverse=True) 
-                          if a.status == "APPROVED"), None)
+                          if a.status == "Approved"), None)
         return latest_adm.academic_year_name if latest_adm else "N/A"
 
 class Guardian(Base):
@@ -124,3 +124,4 @@ class StudentAccount(Base):
     is_active = Column(Boolean, default=False)
 
     student = relationship("Student", back_populates="account")
+uppity
