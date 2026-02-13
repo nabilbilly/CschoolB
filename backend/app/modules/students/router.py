@@ -142,9 +142,9 @@ def list_students(
         
         if status:
             if status.title() == "Active":
-                query = query.filter(Admission.status == AdmissionStatus.APPROVED)
+                query = query.filter(Admission.status == AdmissionStatus.Approved)
             else: # Assuming any other status implies PENDING
-                query = query.filter(Admission.status == AdmissionStatus.PENDING)
+                query = query.filter(Admission.status == AdmissionStatus.Pending)
         
         if academic_year_id:
             query = query.filter(Admission.academic_year_id == academic_year_id)
@@ -184,7 +184,7 @@ def update_student(
         from app.modules.admissions.models import Admission, AdmissionStatus
         latest_adm = db.query(Admission).filter(
             Admission.student_id == student_id,
-            Admission.status == AdmissionStatus.APPROVED
+            Admission.status == AdmissionStatus.Approved
         ).order_by(Admission.created_at.desc()).first()
         
         if latest_adm:

@@ -34,7 +34,7 @@ class AcademicYearUpdate(BaseModel):
 
 class TermBase(BaseModel):
     name: str
-    status: TermStatus = TermStatus.DRAFT
+    status: TermStatus = TermStatus.Draft
     sequence: int = 1
     start_date: Optional[date] = None
     end_date: Optional[date] = None

@@ -11,7 +11,7 @@ class AdmissionBase(BaseModel):
     stream_id: Optional[int] = None
     term_id: int
     voucher_id: int
-    status: AdmissionStatus = AdmissionStatus.PENDING
+    status: AdmissionStatus = AdmissionStatus.Pending
 
     @field_validator('status', mode='before')
     @classmethod

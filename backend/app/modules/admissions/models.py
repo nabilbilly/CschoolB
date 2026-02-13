@@ -6,9 +6,9 @@ from datetime import datetime
 from app.db.base_class import Base
 
 class AdmissionStatus(str, enum.Enum):
-    PENDING = "Pending"
-    APPROVED = "Approved"
-    REJECTED = "Rejected"
+    Pending = "Pending"
+    Approved = "Approved"
+    Rejected = "Rejected"
 
     @classmethod
     def _missing_(cls, value):
@@ -27,7 +27,7 @@ class Admission(Base):
     term_id = Column(Integer, ForeignKey("term.id"), nullable=False)
     voucher_id = Column(Integer, ForeignKey("evoucher.id"), nullable=False)
     
-    status = Column(SqlEnum(AdmissionStatus, values_callable=lambda x: [e.value for e in x]), default=AdmissionStatus.PENDING)
+    status = Column(SqlEnum(AdmissionStatus, values_callable=lambda x: [e.value for e in x]), default=AdmissionStatus.Pending)
     approved_by_admin_id = Column(Integer, nullable=True) # FK to user
     approved_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

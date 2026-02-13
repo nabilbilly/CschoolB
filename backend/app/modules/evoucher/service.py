@@ -26,7 +26,7 @@ class EVoucherService:
                 pin_hash=pin_hash,
                 academic_year_id=obj_in.academic_year_id,
                 expires_at=obj_in.expires_at,
-                status=VoucherStatus.UNUSED
+                status=VoucherStatus.Unused
             )
             db.add(db_obj)
             vouchers_data.append({"voucher_number": voucher_number, "pin": pin})
@@ -50,26 +50,26 @@ class EVoucherService:
             db.commit()
 
         if not voucher:
-            log_attempt(VoucherAttemptResult.NOT_FOUND)
-            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.NOT_FOUND)
+            log_attempt(VoucherAttemptResult.NotFound)
+            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.NotFound)
 
         if not verify_password(obj_in.pin, voucher.pin_hash):
-            log_attempt(VoucherAttemptResult.INVALID_PIN)
-            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.INVALID_PIN)
+            log_attempt(VoucherAttemptResult.InvalidPin)
+            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.InvalidPin)
 
-        if voucher.status == VoucherStatus.USED:
-            log_attempt(VoucherAttemptResult.USED)
-            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.USED)
+        if voucher.status == VoucherStatus.Used:
+            log_attempt(VoucherAttemptResult.Used)
+            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.Used)
 
-        if voucher.status == VoucherStatus.REVOKED:
-            log_attempt(VoucherAttemptResult.NOT_FOUND) # Don't leak revoked status, just say not found/invalid
-            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.NOT_FOUND)
+        if voucher.status == VoucherStatus.Revoked:
+            log_attempt(VoucherAttemptResult.NotFound) # Don't leak revoked status, just say not found/invalid
+            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.NotFound)
 
         if voucher.expires_at < datetime.utcnow():
-            voucher.status = VoucherStatus.EXPIRED
+            voucher.status = VoucherStatus.Expired
             db.commit()
-            log_attempt(VoucherAttemptResult.EXPIRED)
-            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.EXPIRED)
+            log_attempt(VoucherAttemptResult.Expired)
+            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.Expired)
 
         # Handle Reservation
         now = datetime.utcnow()
@@ -79,12 +79,12 @@ class EVoucherService:
         
         # All checks passed, Reserve it
         session_token = str(uuid.uuid4())
-        voucher.status = VoucherStatus.RESERVED
+        voucher.status = VoucherStatus.Reserved
         voucher.reserved_at = now
         voucher.reserved_session_id = session_token
         db.commit()
         
-        log_attempt(VoucherAttemptResult.VALID)
+        log_attempt(VoucherAttemptResult.Valid)
         return EVoucherSessionResponse(
             valid=True, 
             voucher_number=voucher.voucher_number,
@@ -96,8 +96,8 @@ class EVoucherService:
     @staticmethod
     def release_session(db: Session, session_token: str) -> bool:
         voucher = db.query(EVoucher).filter(EVoucher.reserved_session_id == session_token).first()
-        if voucher and voucher.status == VoucherStatus.RESERVED:
-            voucher.status = VoucherStatus.UNUSED
+        if voucher and voucher.status == VoucherStatus.Reserved:
+            voucher.status = VoucherStatus.Unused
             voucher.reserved_at = None
             voucher.reserved_session_id = None
             db.commit()
@@ -107,18 +107,18 @@ class EVoucherService:
     @staticmethod
     def check_session(db: Session, session_token: str) -> EVoucherSessionResponse:
         voucher = db.query(EVoucher).filter(EVoucher.reserved_session_id == session_token).first()
-        if not voucher or voucher.status != VoucherStatus.RESERVED:
-            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.NOT_FOUND)
+        if not voucher or voucher.status != VoucherStatus.Reserved:
+            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.NotFound)
         
         now = datetime.utcnow()
         expires_at = voucher.reserved_at + timedelta(minutes=RESERVATION_TTL_MINUTES)
         if expires_at < now:
             # Session expired
-            voucher.status = VoucherStatus.UNUSED
+            voucher.status = VoucherStatus.Unused
             voucher.reserved_at = None
             voucher.reserved_session_id = None
             db.commit()
-            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.EXPIRED)
+            return EVoucherSessionResponse(valid=False, reason=VoucherAttemptResult.Expired)
         
         return EVoucherSessionResponse(
             valid=True,
@@ -134,13 +134,13 @@ class EVoucherService:
         expired_time = now - timedelta(minutes=RESERVATION_TTL_MINUTES)
         
         expired_vouchers = db.query(EVoucher).filter(
-            EVoucher.status == VoucherStatus.RESERVED,
+            EVoucher.status == VoucherStatus.Reserved,
             EVoucher.reserved_at < expired_time
         ).all()
         
         count = len(expired_vouchers)
         for v in expired_vouchers:
-            v.status = VoucherStatus.UNUSED
+            v.status = VoucherStatus.Unused
             v.reserved_at = None
             v.reserved_session_id = None
             

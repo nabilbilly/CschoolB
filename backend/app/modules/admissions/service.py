@@ -26,7 +26,7 @@ class AdmissionsService:
     ) -> Admission:
         # 1. Validate Voucher Session
         voucher = db.query(EVoucher).filter(EVoucher.reserved_session_id == voucher_session_token).first()
-        if not voucher or voucher.status != VoucherStatus.RESERVED:
+        if not voucher or voucher.status != VoucherStatus.Reserved:
             raise HTTPException(status_code=400, detail="Invalid or expired voucher session")
         
         # 2. Check if voucher matches academic year
@@ -95,7 +95,7 @@ class AdmissionsService:
                 stream_id=placement_data.get('stream_id'),
                 term_id=placement_data['term_id'],
                 voucher_id=voucher.id,
-                status=AdmissionStatus.PENDING
+                status=AdmissionStatus.Pending
             )
             db.add(admission)
             db.flush()
@@ -129,18 +129,18 @@ class AdmissionsService:
         if not admission:
             raise HTTPException(status_code=404, detail="Admission record not found")
         
-        if admission.status not in [AdmissionStatus.PENDING, AdmissionStatus.REJECTED]:
+        if admission.status not in [AdmissionStatus.Pending, AdmissionStatus.Rejected]:
             raise HTTPException(status_code=400, detail="Admission is already processed (Approved)")
 
         try:
             # 1. Update Admission status
-            admission.status = AdmissionStatus.APPROVED
+            admission.status = AdmissionStatus.Approved
             admission.approved_by_admin_id = admin_id
             admission.approved_at = datetime.utcnow()
 
             # 2. Mark Voucher as Used
             voucher = admission.voucher
-            voucher.status = VoucherStatus.USED
+            voucher.status = VoucherStatus.Used
             voucher.used_at = datetime.utcnow()
             voucher.used_by_student_id = admission.student_id
 
@@ -157,7 +157,7 @@ class AdmissionsService:
             # Simple sequence based on count in same year/level
             seq_count = db.query(Student).join(Admission).filter(
                 Admission.academic_year_id == admission.academic_year_id,
-                Admission.status == AdmissionStatus.APPROVED
+                Admission.status == AdmissionStatus.Approved
             ).count()
             
             index_number = f"SCH/{level_code}/{year_short}/{seq_count + 1:04d}"
@@ -187,12 +187,12 @@ class AdmissionsService:
         if not admission:
             raise HTTPException(status_code=404, detail="Admission record not found")
         
-        if admission.status != AdmissionStatus.PENDING:
+        if admission.status != AdmissionStatus.Pending:
             raise HTTPException(status_code=400, detail="Admission is already processed")
 
         try:
             # 1. Update Admission status
-            admission.status = AdmissionStatus.REJECTED
+            admission.status = AdmissionStatus.Rejected
             
             # 2. Reset Voucher (Optional: or mark as invalid)
             # For now, let's make the voucher reusable if rejected?
@@ -200,7 +200,7 @@ class AdmissionsService:
             # Let's mark it as UNUSED so the user can try again or someone else can.
             voucher = admission.voucher
             if voucher:
-                voucher.status = VoucherStatus.UNUSED
+                voucher.status = VoucherStatus.Unused
                 voucher.reserved_at = None
                 voucher.reserved_session_id = None
 

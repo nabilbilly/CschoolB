@@ -21,11 +21,11 @@ def create_academic_year(
         if existing:
             raise HTTPException(status_code=400, detail="Academic year name already exists")
         
-        if obj_in.status == models.YearStatus.ACTIVE:
+        if obj_in.status == models.YearStatus.Active:
             # Enforce single active year: Archive others
             db.query(models.AcademicYear).filter(
-                models.AcademicYear.status == models.YearStatus.ACTIVE
-            ).update({models.AcademicYear.status: models.YearStatus.ARCHIVED})
+                models.AcademicYear.status == models.YearStatus.Active
+            ).update({models.AcademicYear.status: models.YearStatus.Archived})
         
         db_obj = models.AcademicYear(**obj_in.model_dump())
         db.add(db_obj)
@@ -69,7 +69,7 @@ def update_academic_year(
         
         # Handle status change logic
         if obj_in.status is not None:
-            if obj_in.status == models.YearStatus.ACTIVE:
+            if obj_in.status == models.YearStatus.Active:
                 # Validate dates
                 start = obj_in.start_date if obj_in.start_date is not None else year.start_date
                 end = obj_in.end_date if obj_in.end_date is not None else year.end_date
@@ -81,9 +81,9 @@ def update_academic_year(
                 
                 # Enforce single active year: Archive others
                 db.query(models.AcademicYear).filter(
-                    models.AcademicYear.status == models.YearStatus.ACTIVE,
+                    models.AcademicYear.status == models.YearStatus.Active,
                     models.AcademicYear.id != year_id
-                ).update({models.AcademicYear.status: models.YearStatus.ARCHIVED})
+                ).update({models.AcademicYear.status: models.YearStatus.Archived})
             
             year.status = obj_in.status
 
@@ -107,7 +107,7 @@ def delete_academic_year(
             raise HTTPException(status_code=404, detail="Year not found")
         
         # Safety Check: Prevent deleting active year
-        if year.status == models.YearStatus.ACTIVE:
+        if year.status == models.YearStatus.Active:
             raise HTTPException(status_code=400, detail="Cannot delete an Active academic year. Archive it first.")
         
         # Dependency Check: Check for associated vouchers
@@ -176,15 +176,15 @@ def create_term(
     db_obj = models.Term(**obj_in.dict(), academic_year_id=year_id)
     
     # If not draft, validate immediately
-    if db_obj.status != models.TermStatus.DRAFT:
+    if db_obj.status != models.TermStatus.Draft:
         if not db_obj.start_date or not db_obj.end_date:
             raise HTTPException(status_code=400, detail="Start and end dates are required for non-draft terms")
         validate_term_dates(db, db_obj, year)
         
-        if db_obj.status == models.TermStatus.ACTIVE:
+        if db_obj.status == models.TermStatus.Active:
             active_term = db.query(models.Term).filter(
                 models.Term.academic_year_id == year_id,
-                models.Term.status == models.TermStatus.ACTIVE
+                models.Term.status == models.TermStatus.Active
             ).first()
             if active_term:
                 raise HTTPException(status_code=400, detail="Another term is already active in this academic year")
@@ -222,13 +222,13 @@ def update_term(
         
         # If activating, perform checks
         new_status = update_data.get("status")
-        if new_status == models.TermStatus.ACTIVE:
-            if year.status != models.YearStatus.ACTIVE:
+        if new_status == models.TermStatus.Active:
+            if year.status != models.YearStatus.Active:
                 raise HTTPException(status_code=400, detail="Cannot activate a term in a non-active academic year")
             
             active_term = db.query(models.Term).filter(
                 models.Term.academic_year_id == year.id,
-                models.Term.status == models.TermStatus.ACTIVE,
+                models.Term.status == models.TermStatus.Active,
                 models.Term.id != term_id
             ).first()
             if active_term:
@@ -236,13 +236,13 @@ def update_term(
 
         # Validate dates if they are being updated or if status is changing to non-draft
         if any(k in update_data for k in ["start_date", "end_date", "result_open_date", "result_close_date"]) or \
-           (new_status and new_status != models.TermStatus.DRAFT):
+           (new_status and new_status != models.TermStatus.Draft):
             
             # Preview updates for validation
             temp_start = update_data.get("start_date", term.start_date)
             temp_end = update_data.get("end_date", term.end_date)
             
-            if (new_status or term.status) != models.TermStatus.DRAFT:
+            if (new_status or term.status) != models.TermStatus.Draft:
                 if not temp_start or not temp_end:
                     raise HTTPException(status_code=400, detail="Start and end dates are required for non-draft terms")
             

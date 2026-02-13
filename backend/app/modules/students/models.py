@@ -7,8 +7,8 @@ from app.db.base_class import Base
 from ..admissions.models import AdmissionStatus
 
 class Gender(str, enum.Enum):
-    MALE = "Male"
-    FEMALE = "Female"
+    Male = "Male"
+    Female = "Female"
 
     @classmethod
     def _missing_(cls, value):
@@ -72,18 +72,18 @@ class Student(Base):
     def status(self) -> str:
         if not self.admissions: return "Inactive"
         # Check if there's any approved admission
-        has_approved = any(a.status == AdmissionStatus.APPROVED for a in self.admissions)
+        has_approved = any(a.status == AdmissionStatus.Approved for a in self.admissions)
         if has_approved:
             return "Active"
         # Check for pending
-        if any(a.status == AdmissionStatus.PENDING for a in self.admissions):
+        if any(a.status == AdmissionStatus.Pending for a in self.admissions):
             return "Pending Approval"
         return "Inactive"
 
     @property
     def pending_admission_id(self) -> Optional[int]:
         if not self.admissions: return None
-        pending = next((a for a in self.admissions if a.status == AdmissionStatus.PENDING), None)
+        pending = next((a for a in self.admissions if a.status == AdmissionStatus.Pending), None)
         return pending.id if pending else None
 
     @property
@@ -124,4 +124,3 @@ class StudentAccount(Base):
     is_active = Column(Boolean, default=False)
 
     student = relationship("Student", back_populates="account")
-uppity
