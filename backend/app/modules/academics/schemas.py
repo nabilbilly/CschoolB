@@ -13,12 +13,7 @@ class AcademicYearBase(BaseModel):
     @classmethod
     def validate_status(cls, v):
         if isinstance(v, str):
-            v = v.upper()
-            valid_statuses = [s.value for s in YearStatus]
-            if v not in valid_statuses:
-                # Let Pydantic's default Enum validation handle the error if not in list
-                # or return as is and let Enum validator catch it
-                pass
+            return v.strip().upper()
         return v
 
 class AcademicYearCreate(AcademicYearBase):
@@ -33,8 +28,8 @@ class AcademicYearUpdate(BaseModel):
     @field_validator('status', mode='before')
     @classmethod
     def validate_status(cls, v):
-        if v is not None and isinstance(v, str):
-            return v.upper()
+        if isinstance(v, str):
+            return v.strip().upper()
         return v
 
 class TermBase(BaseModel):
@@ -50,7 +45,7 @@ class TermBase(BaseModel):
     @classmethod
     def validate_status(cls, v):
         if isinstance(v, str):
-            return v.upper()
+            return v.strip().upper()
         return v
 
 class TermCreate(TermBase):
@@ -68,8 +63,8 @@ class TermUpdate(BaseModel):
     @field_validator('status', mode='before')
     @classmethod
     def validate_status(cls, v):
-        if v is not None and isinstance(v, str):
-            return v.upper()
+        if isinstance(v, str):
+            return v.strip().upper()
         return v
 
 class TermResponse(TermBase):

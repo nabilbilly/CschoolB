@@ -50,7 +50,11 @@ app.add_middleware(LoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r"^https://.*\.up\.railway\.app$",
-    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+    allow_origins=[
+        "https://react-frontend-production-e144.up.railway.app",
+        "https://fastapi-production-bc086.up.railway.app",
+        *[str(origin) for origin in settings.BACKEND_CORS_ORIGINS]
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
